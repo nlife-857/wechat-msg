@@ -6,7 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
@@ -24,10 +27,17 @@ public class ImgMsgWriter {
         try{
             StringWriter writerStr = new StringWriter();
             Result resultXml = new StreamResult(writerStr);
-            AttributesImpl attr = new AttributesImpl();
-            TransformerHandler th = BaseMsgWriter.getxml(toUserName, fromUserName,attr);
 
+            SAXTransformerFactory sff = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
+            TransformerHandler th = sff.newTransformerHandler();
             th.setResult(resultXml);
+
+            Transformer transformer = th.getTransformer();
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); //编码格式是UTF-8
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            th.startDocument(); //开始xml文档
+            AttributesImpl attr = new AttributesImpl();
+            BaseMsgWriter.packageXml(th,attr,toUserName,fromUserName);
 
             th.startElement("", "", "MsgType", attr); //定义MsgType节点
             th.startCDATA();

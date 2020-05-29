@@ -23,17 +23,8 @@ public class BaseMsgWriter {
 
     private static Logger logger = LoggerFactory.getLogger(ImgMsgWriter.class);
 
-    public static  TransformerHandler getxml(String toUserName,String fromUserName,AttributesImpl attr){
+    public static  void packageXml(TransformerHandler th,AttributesImpl attr,String toUserName,String fromUserName){
         try{
-
-
-            SAXTransformerFactory sff = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
-            TransformerHandler th = sff.newTransformerHandler();
-
-
-            Transformer transformer = th.getTransformer();
-            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); //编码格式是UTF-8
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             th.startDocument(); //开始xml文档
             th.startElement("", "", "xml", attr); //定义xml节点
 
@@ -57,13 +48,8 @@ public class BaseMsgWriter {
             th.characters(createTime.toCharArray(), 0, createTime.length());
             th.endCDATA();
             th.endElement("", "", "CreateTime"); //结束CreateTime节点
-
-
-
-            return th;
         }catch (Exception e){
             logger.error("package result thows exception:{}",e.toString());
-            return null;
         }
 
     }

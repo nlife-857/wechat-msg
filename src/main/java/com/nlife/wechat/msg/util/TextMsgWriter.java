@@ -27,10 +27,17 @@ public class TextMsgWriter {
         try{
             StringWriter writerStr = new StringWriter();
             Result resultXml = new StreamResult(writerStr);
-            AttributesImpl attr = new AttributesImpl();
-            TransformerHandler th = BaseMsgWriter.getxml(toUserName, fromUserName,attr);
 
+            SAXTransformerFactory sff = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
+            TransformerHandler th = sff.newTransformerHandler();
             th.setResult(resultXml);
+
+            Transformer transformer = th.getTransformer();
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); //编码格式是UTF-8
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            th.startDocument(); //开始xml文档
+            AttributesImpl attr = new AttributesImpl();
+            BaseMsgWriter.packageXml(th,attr,toUserName,fromUserName);
 
             th.startElement("", "", "MsgType", attr); //定义MsgType节点
             th.startCDATA();
@@ -52,7 +59,7 @@ public class TextMsgWriter {
             return writerStr.getBuffer().toString();
         }catch (Exception e){
             //组装微信返回文本信息抛出异常
-            logger.error("package result thows exception:{}",e.toString());
+            logger.error("组装微信返回文本信息抛出异常:{}",e.toString());
             return WechatReturn.SUCCESS;
         }
 
