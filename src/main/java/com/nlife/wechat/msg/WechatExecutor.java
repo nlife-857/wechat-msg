@@ -92,13 +92,13 @@ public class WechatExecutor implements SmartInitializingSingleton, DisposableBea
      * 扫描对应包下的类
      */
     private void scanPackages(){
-        Assert.noNullElements(scanPackages,"扫描的包不能为null");
+        Assert.noNullElements(scanPackages,"scanPackages must not null");
         Arrays.stream(scanPackages).forEach(i ->{
             Set<Class<?>> classSet = ClassUtil.scanPackage(i);
             classSet.stream().forEach( j ->{
                 if (j.isAnnotationPresent(WechatController.class)){
                     WechatController wechatController = j.getAnnotation(WechatController.class);
-                    logger.debug("==> 扫描到处理类：{} ,匹配类型为：{}",j.toString(),wechatController.value());
+                    logger.debug("==> scan handle class :{} ,handle type:{}",j.toString(),wechatController.value());
                     List<Class> classes = classConcurrentMap.get(wechatController.value());
                     if (classes == null){
                         classes = new ArrayList<>();
@@ -110,7 +110,7 @@ public class WechatExecutor implements SmartInitializingSingleton, DisposableBea
                     for (Method method: j.getMethods()){
                         WechatMapping wechatMapping = method.getAnnotation(WechatMapping.class);
                         if (wechatMapping != null){
-                            logger.debug("====> 扫描到处理类：{} ,匹配类型为：{} 方法:{} 上正则表达式为:{} 优先级为:{}",j.toString(),wechatController.value(),method.getName(),wechatMapping.value(),wechatMapping.order());
+                            logger.debug("====> scan handle class:{} ,handle type:{} method:{} patten:{} order:{}",j.toString(),wechatController.value(),method.getName(),wechatMapping.value(),wechatMapping.order());
                             ConcurrentMap<String,ConcurrentMap<Integer,Method>> methodMap = methodConcurrentMap.get(j);
                             if (methodMap == null){
                                 methodMap = new ConcurrentHashMap();
@@ -119,7 +119,10 @@ public class WechatExecutor implements SmartInitializingSingleton, DisposableBea
                             ConcurrentMap<Integer,Method> realMethodMap = methodMap.get(wechatMapping.value());
                             if (realMethodMap == null){
                                 realMethodMap = new ConcurrentHashMap<>();
-                                methodMap.put(wechatMapping.value(),realMethodMap);
+                                String[] values = wechatMapping.value();
+                                for (String value:values){
+                                    methodMap.put(value,realMethodMap);
+                                }
                             }
                             realMethodMap.put(wechatMapping.order(),method);
                         }
@@ -137,7 +140,7 @@ public class WechatExecutor implements SmartInitializingSingleton, DisposableBea
         String content = requestParam.get("Content");
         Map <Integer,PackageClass> temp = getHandleClass(classList,content);
         if (temp.isEmpty()){
-            logger.warn("对微信消息:{} 未查询到处理方法",content);
+            logger.warn("not found class to handle wechat message:{}",content);
         }else{
             return realHandle(temp,requestParam);
         }
@@ -151,7 +154,7 @@ public class WechatExecutor implements SmartInitializingSingleton, DisposableBea
         String patten = requestParam.get("Event");
         Map <Integer,PackageClass> temp = getHandleClass(classList,patten);
         if (temp.isEmpty()){
-            logger.warn("对微信消息:{} 未查询到处理方法",patten);
+            logger.warn("not found class to handle wechat message:{}",patten);
         }else{
             return realHandle(temp,requestParam);
         }
@@ -172,9 +175,6 @@ public class WechatExecutor implements SmartInitializingSingleton, DisposableBea
                         ConcurrentMap<Integer,Method> realMethodMap = methodMap.get(keyStr);
                         Integer keyInteger = Collections.min(realMethodMap.keySet());
                         Method method = realMethodMap.get(keyInteger);
-                        if (temp.get(keyInteger) != null){
-                            logger.warn("对微信消息:{} 存在相同优先级的处理方法，将使用 {} - {}进行处理",patten,clazz.toString(),method.getName());
-                        }
                         temp.put(keyInteger,new PackageClass(clazz,method));
                     }
                 }

@@ -18,7 +18,7 @@ public @interface WechatMapping {
      * 匹配规则，正则表达式
      * @return
      */
-    String value() default "";
+    String[] value() default "";
 
     /**
      * 排序规则，多个方法都匹配成功时，此值越低的方法被执行

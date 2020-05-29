@@ -47,8 +47,22 @@ public class TextHandle {
         return TextMsgWriter.getXmlString(param.get("FromUserName"),param.get("ToUserName"),"你也好啊");
     }
 }
-```
 
+
+```
+或者
+```
+@WechatController(MsgType.EVENT)
+@Component
+@Slf4j
+public class EventHandle {
+
+    @WechatMapping(EventType.SUBSCRIBE)
+    public Object handleSubscribe(Map<String,String> param){
+        return WechatReturn.SUCCESS;
+    }
+}
+```
 程序在接收到文本消息推送时，匹配到对应关键字时会自动调用handleMsg方法来处理
      
 <font color=red>WechatMapping中value为正则表达式匹配，order为排序，多个匹配都成功时，order低的方法将被调用</font>
