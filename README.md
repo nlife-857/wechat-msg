@@ -42,7 +42,7 @@ public Object receive(HttpServletRequest request, HttpServletResponse response){
 public class TextHandle {
 
 
-    @WechatMapping(value = "你好", order = 2)
+    @WechatMapping(value = { ".*[你][好].*" , ".*[测][试].*" })
     public Object handleMsg(Map<String,String> param){
         return TextMsgWriter.getXmlString(param.get("FromUserName"),param.get("ToUserName"),"你也好啊");
     }
